@@ -1,0 +1,43 @@
+{
+    "name": "ngunyimacharia/laravel-openedx",
+    "description": ":description",
+    "license": "license",
+    "authors": [
+        {
+            "name": "author name",
+            "email": "author email",
+            "homepage": "author homepage"
+        }
+    ],
+    "homepage": "https://github.com/ngunyimacharia/laravel-openedx",
+    "keywords": ["Laravel", "laravel-openedx"],
+    "require": {
+        "illuminate/support": "~5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~7.0",
+        "mockery/mockery": "^1.1",
+        "orchestra/testbench": "~3.0",
+        "sempro/phpunit-pretty-print": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ngunyimacharia\\laravel-openedx\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ngunyimacharia\\laravel-openedx\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ngunyimacharia\\laravel-openedx\\laravel-openedxServiceProvider"
+            ],
+            "aliases": {
+                "laravel-openedx": "ngunyimacharia\\laravel-openedx\\Facades\\laravel-openedx"
+            }
+        }
+    }
+}
