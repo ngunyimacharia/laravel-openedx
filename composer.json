@@ -1,7 +1,7 @@
 {
     "name": "ngunyimacharia/laravel-openedx",
     "description": "OpenEdx integration for laravel framework.",
-    "license": "license",
+    "license": "MIT",
     "authors": [
         {
             "name": "Kelvin Macharia Ngunyi",
