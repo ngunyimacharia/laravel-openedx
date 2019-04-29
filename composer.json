@@ -1,18 +1,24 @@
 {
     "name": "ngunyimacharia/laravel-openedx",
-    "description": ":description",
+    "description": "OpenEdx integration for laravel framework.",
     "license": "license",
     "authors": [
         {
-            "name": "author name",
-            "email": "author email",
-            "homepage": "author homepage"
+            "name": "Kelvin Macharia Ngunyi",
+            "email": "ngunyimacharia@gmail.com",
+            "homepage": "https://github.com/ngunyimacharia/"
         }
     ],
     "homepage": "https://github.com/ngunyimacharia/laravel-openedx",
-    "keywords": ["Laravel", "laravel-openedx"],
+    "keywords": [
+        "Laravel",
+        "openedx"
+    ],
     "require": {
-        "illuminate/support": "~5"
+        "illuminate/support": "~5",
+        "guzzlehttp/guzzle": "^6.3",
+        "oriceon/toastr-5-laravel": "^1.0",
+        "ixudra/curl": "^6.16"
     },
     "require-dev": {
         "phpunit/phpunit": "~7.0",
@@ -22,21 +28,21 @@
     },
     "autoload": {
         "psr-4": {
-            "ngunyimacharia\\laravel-openedx\\": "src/"
+            "ngunyimacharia\\openedx\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ngunyimacharia\\laravel-openedx\\Tests\\": "tests"
+            "ngunyimacharia\\openedx\\Tests\\": "tests"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "ngunyimacharia\\laravel-openedx\\laravel-openedxServiceProvider"
+                "ngunyimacharia\\openedx\\openedxServiceProvider"
             ],
             "aliases": {
-                "laravel-openedx": "ngunyimacharia\\laravel-openedx\\Facades\\laravel-openedx"
+                "openedx": "ngunyimacharia\\openedx\\Facades\\openedx"
             }
         }
     }
