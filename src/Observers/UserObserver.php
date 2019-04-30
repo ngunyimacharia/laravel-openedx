@@ -5,6 +5,7 @@ namespace ngunyimacharia\openedx\Observers;
 use App\User;
 use ngunyimacharia\openedx\Models\EdxAuthUser;
 use ngunyimacharia\openedx\Models\PasswordReset;
+use Ixudra\Curl\Facades\Curl;
 
 class UserObserver
 {
@@ -16,7 +17,6 @@ class UserObserver
      */
     public function created(User $user)
     {
-        die;
         //Validate user
         if ($user === null) {
             return;
@@ -24,11 +24,10 @@ class UserObserver
         //Package data to be sent
         $data = [
             'email' => $user->email,
-            'first_name' => $user->first_name,
-            'last_name' => $user->first_name,
+            'name' => $user->first_name . ' ' . $user->last_name,
             'username' => $user->username,
             'honor_code' => 'true',
-            'password' => request()->get(env('PASSWORD_FIELD')),
+            'password' => request()->get(env('REGISTER_PASSWORD_FIELD')),
             'country' => 'KE',
             'terms_of_service' => 'true'
         ];
@@ -36,18 +35,17 @@ class UserObserver
         $headers = array(
             'Content-Type' => 'application/x-www-form-urlencoded',
             'cache-control' => 'no-cache',
-            'Referer' => env('MICROSITE_URL') . '/register',
+            'Referer' => env('LMS_BASE') . '/register',
         );
 
-        $client = new \GuzzleHttp\Client();
+        $client = new \GuzzleHttp\Client(['verify' => env('VERIFY_SSL', true)]);
 
         try {
-
+            
             $response = $client->request('POST', env('LMS_REGISTRATION_URL'), [
                 'form_params' => $data,
                 'headers' => $headers,
             ]);
-
 
             return true;
         } catch (\GuzzleHttp\Exception\ClientException $e) {

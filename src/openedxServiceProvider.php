@@ -16,7 +16,6 @@ class openedxServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        dd("Testing");
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'ngunyimacharia');
         // $this->loadViewsFrom(__DIR__.'/../resources/views', 'ngunyimacharia');
         // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');

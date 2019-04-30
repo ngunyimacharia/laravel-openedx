@@ -101,7 +101,7 @@ class SuccessfulLogin
                     if ($ourCookie['name'] == 'csrftoken') {
                         $ourCookie['domain'] = '';
                     } else {
-                        $ourCookie['domain'] = env('APP_DOMAIN');
+                        $ourCookie['domain'] = env('MICROSITE_URL');
                     }
                     //Set the cookie
                     setrawcookie($ourCookie['name'], $ourCookie['value'], 0, '/', $ourCookie['domain']);
@@ -127,7 +127,6 @@ class SuccessfulLogin
             ->withResponseHeaders()
             ->returnResponseObject()
             ->post();
-        dd($accessResponse);
         if ($accessResponse->status !== 200) {
             Toastr::error('Authentication Error: Username does not exist or invalid credentials given');
         }
