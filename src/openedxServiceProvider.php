@@ -4,7 +4,7 @@ namespace ngunyimacharia\openedx;
 
 use Event;
 use App\User;
-use ngunyimacharia\openedx\Observers\UserObserver; 
+use ngunyimacharia\openedx\Observers\UserObserver;
 use Illuminate\Support\ServiceProvider;
 
 class openedxServiceProvider extends ServiceProvider
@@ -32,9 +32,10 @@ class openedxServiceProvider extends ServiceProvider
         );
         //Register observer
         User::observe(UserObserver::class);
-    
-        //Listen for login
-        Event::listen('Illuminate\Auth\Events\Login','ngunyimacharia\openedx\Listeners\SuccessfulLogin');
+
+        //Listen for login and logout
+        Event::listen('Illuminate\Auth\Events\Login', 'ngunyimacharia\openedx\Listeners\SuccessfulLogin');
+        Event::listen('Illuminate\Auth\Events\Logout', 'ngunyimacharia\openedx\Listeners\SuccessfulLogout');
     }
 
     /**
@@ -74,14 +75,14 @@ class openedxServiceProvider extends ServiceProvider
             __DIR__ . '/../config/openedx.php' => config_path('openedx.php'),
         ], 'openedx.config');
 
+        // Publishing assets.
+        $this->publishes([
+            __DIR__ . '/../resources/assets' => public_path('vendor/ngunyimacharia'),
+        ], 'openedx.views');
+
         // Publishing the views.
         /*$this->publishes([
             __DIR__.'/../resources/views' => base_path('resources/views/vendor/ngunyimacharia'),
-        ], 'openedx.views');*/
-
-        // Publishing assets.
-        /*$this->publishes([
-            __DIR__.'/../resources/assets' => public_path('vendor/ngunyimacharia'),
         ], 'openedx.views');*/
 
         // Publishing the translation files.

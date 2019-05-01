@@ -5,6 +5,7 @@ namespace ngunyimacharia\openedx\Listeners;
 use Toastr;
 use Ixudra\Curl\Facades\Curl;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Auth;
 
 class SuccessfulLogin
 {
@@ -26,8 +27,7 @@ class SuccessfulLogin
      */
     public function handle($event)
     {
-        $webcookies = request()->cookie();
-        $email = $event->user->email;
+        $email = Auth::user()->email;
         $password = request()->get(env('LOGIN_PASSWORD_FIELD'));
         //Get CSRF Token
         $client = new \GuzzleHttp\Client(['verify' => env('VERIFY_SSL', true)]);
@@ -77,7 +77,7 @@ class SuccessfulLogin
                 Toastr::error('Error getting Course Authentication');
             }
             $loggedInCookies = $response->getHeader('Set-Cookie');
-            $ourCookies = [];
+            $setCookies = [];
             foreach ($loggedInCookies as $userCookie) {
                 //format cookies
                 $cookieDetails = (explode(';', $userCookie));
@@ -101,10 +101,10 @@ class SuccessfulLogin
                     if ($ourCookie['name'] == 'csrftoken') {
                         $ourCookie['domain'] = '';
                     } else {
-                        $ourCookie['domain'] = env('MICROSITE_URL');
+                        $ourCookie['domain'] = '.' . env('MICROSITE_BASE');
                     }
                     //Set the cookie
-                    setrawcookie($ourCookie['name'], $ourCookie['value'], 0, '/', $ourCookie['domain']);
+                    $setCookies[] = ['name' => $ourCookie['name'], 'value' => $ourCookie['value'], 'domain' => $ourCookie['domain']];
                 }
             }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -132,7 +132,17 @@ class SuccessfulLogin
         }
         //Set access token
         $accessToken = json_decode($accessResponse->content, true);
-        Cookie::queue(Cookie::make('edinstancexid', $accessToken['access_token'], $accessToken['expires_in']));
+        $setCookies[] = ['name' => 'edinstancexid', 'value' => $accessToken['access_token'], 'expiry' => $accessToken['expires_in']];
+
+        foreach ($setCookies as $cookie) {
+            if (!isset($cookie['expiry'])) {
+                $cookie['expiry'] = 0;
+            }
+            if (!isset($cookie['domain'])) {
+                $cookie['domain'] = "";
+            }
+            setrawcookie($cookie['name'], $cookie['value'], $cookie['expiry'], '/', $cookie['domain']);
+        }
         return true;
     }
 }
