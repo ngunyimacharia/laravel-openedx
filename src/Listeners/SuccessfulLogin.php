@@ -27,8 +27,8 @@ class SuccessfulLogin
      */
     public function handle($event)
     {
-        $email = Auth::user()->email;
-        $password = request()->get(env('LOGIN_PASSWORD_FIELD'));
+        $email = request()->get(env('LOGIN_EMAIL_FIELD')) ?: request()->get(env('REGISTER_EMAIL_FIELD'));
+        $password = request()->get(env('LOGIN_PASSWORD_FIELD')) ?: request()->get(env('REGISTER_PASSWORD_FIELD'));
         //Get CSRF Token
         $client = new \GuzzleHttp\Client(['verify' => env('VERIFY_SSL', true)]);
         try {
