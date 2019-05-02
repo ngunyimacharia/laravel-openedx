@@ -35,6 +35,7 @@ class SuccessfulLogin
             $response = $client->request('GET', env('LMS_LOGIN_URL'));
         } catch (\Exception $e) {
             Toastr::error("There was a problem logging you in. Please try again later or report to support.");
+            return;
         }
         $csrfToken = null;
         foreach ($response->getHeader('Set-Cookie') as $key => $cookie) {
@@ -47,6 +48,7 @@ class SuccessfulLogin
         if (!$csrfToken) {
             //Error, reactivate reset
             Toastr::error("There was a problem logging you in. Please try again later or report to support.");
+            return;
         }
         $data = [
             'email' => $email,
@@ -75,6 +77,7 @@ class SuccessfulLogin
             //set cookies
             if (!$response->hasHeader('Set-Cookie')) {
                 Toastr::error('Error getting Course Authentication');
+                return;
             }
             $loggedInCookies = $response->getHeader('Set-Cookie');
             $setCookies = [];
@@ -111,6 +114,7 @@ class SuccessfulLogin
             $response = $e->getResponse();
             $responseBodyAsString = $response->getBody()->getContents();
             Toastr::error($responseBodyAsString);
+            return;
         }
         $data = [
             'grant_type' => 'password',
@@ -129,6 +133,7 @@ class SuccessfulLogin
             ->post();
         if ($accessResponse->status !== 200) {
             Toastr::error('Authentication Error: Username does not exist or invalid credentials given');
+            return;
         }
         //Set access token
         $accessToken = json_decode($accessResponse->content, true);
