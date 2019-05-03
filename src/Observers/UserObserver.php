@@ -41,7 +41,7 @@ class UserObserver
         $client = new \GuzzleHttp\Client(['verify' => env('VERIFY_SSL', true)]);
 
         try {
-            
+
             $response = $client->request('POST', env('LMS_REGISTRATION_URL'), [
                 'form_params' => $data,
                 'headers' => $headers,
@@ -76,6 +76,22 @@ class UserObserver
             return redirect()->back()->withErrors("There was a problem creating your account. Please try again later or report to support.");
         }
     }
+
+
+    /**
+     * Handle the user "updated" event.
+     *
+     * @param  \App\User  $user
+     * @return void
+     */
+    public function updating(User $user)
+    {
+        $password = request()->get('password');
+        if ($password) {
+            return $this->resetEdxPassword($user, $password);
+        }
+    }
+
     /**
      * Handle the user "updated" event.
      *
@@ -136,5 +152,58 @@ class UserObserver
     public function forceDeleted(User $user)
     {
         //
+    }
+
+
+    private function resetEdxPassword($user, $password)
+    {
+        //if password reset, perform edx password resets
+        $email = $user->email;
+
+        $client = new \GuzzleHttp\Client();
+        try {
+            $response = $client->request('GET', env('LMS_RESET_PASSWORD_PAGE'));
+        } catch (\Exception $e) {
+            return Toastr::error("There was a problem resetting your password. Please try again later or report to support.");
+        }
+        if ($response->hasHeader('Set-Cookie')) {
+            $csrfToken = explode('=', explode(';', $response->getHeader('Set-Cookie')[0])[0])[1];
+        } else {
+            //Error, reactivate reset
+            return Toastr::error("There was a problem resetting your password. Please try again later or report to support.");
+        }
+
+
+        $data = [
+            'email' => $email,
+            'password' => $password,
+            'csrfmiddlewaretoken' => $csrfToken
+        ];
+
+        $headers = array(
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'cache-control' => 'no-cache',
+            'Referer' => env('APP_URL') . '/register',
+        );
+
+        $client = new \GuzzleHttp\Client();
+        try {
+
+            $response = $client->request('POST', env('LMS_RESET_PASSWORD_API_URL'), [
+                'form_params' => $data,
+                'headers' => $headers,
+            ]);
+            return true;
+            
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $responseJson = $e->getResponse();
+            dd($e->getResponse());
+            $response = $responseJson->getBody()->getContents();
+            //Error, reactivate reset
+            return Toastr::error("There was a problem resetting your password. Please try again later or report to support.");
+        } catch (\Exception $e) {
+            //Error, reactivate reset
+            return Toastr::error("There was a problem resetting your password. Please try again later or report to support.");
+        }
     }
 }
