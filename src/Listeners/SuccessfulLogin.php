@@ -138,13 +138,12 @@ class SuccessfulLogin
         //Set access token
         $accessToken = json_decode($accessResponse->content, true);
         $setCookies[] = ['name' => 'edinstancexid', 'value' => $accessToken['access_token'], 'expiry' => $accessToken['expires_in']];
-
         foreach ($setCookies as $cookie) {
-            if (!isset($cookie['expiry'])) {
-                $cookie['expiry'] = 0;
-            }
+            $cookie['expiry'] = 0;
+            // if (!isset($cookie['expiry'])) {
+            // }
             if (!isset($cookie['domain'])) {
-                $cookie['domain'] = "";
+                $cookie['domain'] = ".sustainabilitytraining.tk";
             }
             setrawcookie($cookie['name'], $cookie['value'], $cookie['expiry'], '/', $cookie['domain']);
         }

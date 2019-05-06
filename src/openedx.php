@@ -1,8 +1,11 @@
 <?php
 
 namespace ngunyimacharia\openedx;
-use Carbon\Carbon;
 
+use Carbon\Carbon;
+use Cookie;
+use Auth;
+use Toastr;
 class openedx
 {
     public function getCourses()
@@ -62,6 +65,86 @@ class openedx
             $responseJson = $e->getResponse();
             $response = $responseJson->getBody()->getContents();
             dd($response);
+        }
+    }
+
+    /*
+  * Function to get enrollment status
+  */
+    public function checkEnrollmentStatus($course_id)
+    {
+        $client = new \GuzzleHttp\Client(
+            [
+                'verify' => env('VERIFY_SSL', true),
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $_COOKIE['edinstancexid']
+                ]
+            ]
+        );
+        
+        $request = $client->request('GET', env('LMS_BASE') . '/api/enrollment/v1/enrollment/' . Auth::user()->username . ',' . $course_id);
+        $response = json_decode($request->getBody()->getContents());
+
+        if ($response && $response->is_active == true) {
+            $enrollmentStatus = true;
+        } else {
+            $enrollmentStatus = false;
+        }
+        return $enrollmentStatus;
+    }
+
+    /*
+  *Function to enroll a user
+  */
+    public function enroll($course_id)
+    {
+
+
+        if ($this->checkEnrollmentStatus($course_id)) {
+            return Toastr::error("You're already enrolled to this course");
+        }
+
+        $courseInfoObject = new \stdClass();
+        $courseInfoObject->course_id = $course_id;
+
+        $enollAttributesObject = new \stdClass();
+        $enollAttributesObject->namespace = 'honor';
+        $enollAttributesObject->name = env('APP_NAME');
+        $enollAttributesObject->value = env('APP_NAME');
+
+        $enrollmentInfoObject = new \stdClass();
+        $enrollmentInfoObject->user = Auth::user()->slug;
+        $enrollmentInfoObject->mode = 'honor';
+        $enrollmentInfoObject->is_active = true;
+        $enrollmentInfoObject->course_details = $courseInfoObject;
+        $enrollmentInfoObject->enrollment_attributes = [$enollAttributesObject];
+
+
+        $enrollClient = new \GuzzleHttp\Client(
+            [
+                'verify' => env('VERIFY_SSL', true),
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $_COOKIE['edinstancexid']
+                ]
+            ]
+        );
+
+        try {
+            $response = $enrollClient->request('POST', env('LMS_BASE') . '/api/enrollment/v1/enrollment', [
+                \GuzzleHttp\RequestOptions::JSON => $enrollmentInfoObject
+            ]);
+            
+            return Toastr::success("You have successfully enrolled into this course");
+
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+
+            $response = $e->getResponse();
+            $responseBodyAsString = $response->getBody()->getContents();
+            // dd($responseBodyAsString);
+            
+            return Toastr::error("Error enrolling into course");
+
+            return false;
         }
     }
 }
