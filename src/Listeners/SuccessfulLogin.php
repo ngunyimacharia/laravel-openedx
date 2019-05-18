@@ -31,12 +31,9 @@ class SuccessfulLogin
         $password = request()->get(env('LOGIN_PASSWORD_FIELD')) ?: request()->get(env('REGISTER_PASSWORD_FIELD'));
         //Get CSRF Token
         $client = new \GuzzleHttp\Client(['verify' => env('VERIFY_SSL', true)]);
-        try {
-            $response = $client->request('GET', env('LMS_LOGIN_URL'));
-        } catch (\Exception $e) {
-            Toastr::error("There was a problem logging you in. Please try again later or report to support.");
-            return;
-        }
+        $response = $client->request('GET', env('LMS_LOGIN_URL'));
+
+
         $csrfToken = null;
         foreach ($response->getHeader('Set-Cookie') as $key => $cookie) {
             if (strpos($cookie, 'csrftoken') === FALSE) {
@@ -68,54 +65,50 @@ class SuccessfulLogin
             'csrftoken' => $csrfToken
         ], env('LMS_DOMAIN'));
 
-        try {
-            $response = $client->request('POST', env('LMS_LOGIN_URL'), [
-                'form_params' => $data,
-                'headers' => $headers,
-                'cookies' => $cookieJar
-            ]);
-            //set cookies
-            if (!$response->hasHeader('Set-Cookie')) {
-                Toastr::error('Error getting Course Authentication');
-                return;
-            }
-            $loggedInCookies = $response->getHeader('Set-Cookie');
-            $setCookies = [];
-            foreach ($loggedInCookies as $userCookie) {
-                //format cookies
-                $cookieDetails = (explode(';', $userCookie));
-                $ourCookie = [];
-                foreach ($cookieDetails as $cookieDetail) {
-                    $key = strtolower(trim(explode('=', $cookieDetail)[0]));
-                    $value = isset(explode('=', $cookieDetail)[1]) ? trim(explode('=', $cookieDetail)[1]) : 1;
-                    if (
-                        in_array(
-                            strtolower($key),
-                            ['__cfduid', 'csrftoken', 'edxloggedin', 'sessionid', 'openedx-language-preference', 'edx-user-info']
-                        )
-                    ) {
-                        $ourCookie['name'] = $key;
-                        $ourCookie['value'] = $value;
-                    } else {
-                        $ourCookie[$key] = $value;
-                    }
-                }
-                if ($ourCookie['name'] != 'edx-user-info' && !isset($ourCookie['domain'])) {
-                    if ($ourCookie['name'] == 'csrftoken') {
-                        $ourCookie['domain'] = '';
-                    } else {
-                        $ourCookie['domain'] = '.' . env('MICROSITE_BASE');
-                    }
-                    //Set the cookie
-                    $setCookies[] = ['name' => $ourCookie['name'], 'value' => $ourCookie['value'], 'domain' => $ourCookie['domain']];
-                }
-            }
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            $response = $e->getResponse();
-            $responseBodyAsString = $response->getBody()->getContents();
-            Toastr::error($responseBodyAsString);
+
+        $response = $client->request('POST', env('LMS_LOGIN_URL'), [
+            'form_params' => $data,
+            'headers' => $headers,
+            'cookies' => $cookieJar
+        ]);
+        //set cookies
+        if (!$response->hasHeader('Set-Cookie')) {
+            Toastr::error('Error getting Course Authentication');
             return;
         }
+        $loggedInCookies = $response->getHeader('Set-Cookie');
+        $setCookies = [];
+        foreach ($loggedInCookies as $userCookie) {
+            //format cookies
+            $cookieDetails = (explode(';', $userCookie));
+            $ourCookie = [];
+            foreach ($cookieDetails as $cookieDetail) {
+                $key = strtolower(trim(explode('=', $cookieDetail)[0]));
+                $value = isset(explode('=', $cookieDetail)[1]) ? trim(explode('=', $cookieDetail)[1]) : 1;
+                if (
+                    in_array(
+                        strtolower($key),
+                        ['__cfduid', 'csrftoken', 'edxloggedin', 'sessionid', 'openedx-language-preference', 'edx-user-info']
+                    )
+                ) {
+                    $ourCookie['name'] = $key;
+                    $ourCookie['value'] = $value;
+                } else {
+                    $ourCookie[$key] = $value;
+                }
+            }
+            if ($ourCookie['name'] != 'edx-user-info' && !isset($ourCookie['domain'])) {
+                if ($ourCookie['name'] == 'csrftoken') {
+                    $ourCookie['domain'] = '';
+                } else {
+                    $ourCookie['domain'] = '.' . env('MICROSITE_BASE');
+                }
+                //Set the cookie
+                $setCookies[] = ['name' => $ourCookie['name'], 'value' => $ourCookie['value'], 'domain' => $ourCookie['domain']];
+            }
+        }
+
+
         $data = [
             'grant_type' => 'password',
             'client_id' => env('EDX_KEY'),

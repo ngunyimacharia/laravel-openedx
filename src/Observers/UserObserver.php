@@ -6,6 +6,7 @@ use App\User;
 use ngunyimacharia\openedx\Models\EdxAuthUser;
 use ngunyimacharia\openedx\Models\PasswordReset;
 use Ixudra\Curl\Facades\Curl;
+use Toastr;
 
 class UserObserver
 {
@@ -32,6 +33,12 @@ class UserObserver
             'terms_of_service' => 'true'
         ];
 
+        //Check username
+        while(EdxAuthUser::where('username',$user->username)->count()){
+            $user->username = $user->username.random_int(0, 9);
+            $user->save();
+        }
+
         $headers = array(
             'Content-Type' => 'application/x-www-form-urlencoded',
             'cache-control' => 'no-cache',
@@ -52,28 +59,10 @@ class UserObserver
 
             //Error, delete user
             $user->delete();
-
-            $responseJson = $e->getResponse();
-            $response = json_decode($responseJson->getBody()->getContents(), true);
-
             //Delete password resets
             PasswordReset::where('email', '=', $user->email)->delete();
-            $errors = [];
-            foreach ($response as $key => $error) {
-                //Return error
-                $errors[] = $error;
-            }
-            echo "CATCH 1";
-            return redirect()->back()->withErrors($errors[0]);
-        } catch (\Exception $e) {
-
-            //Error, delete user
-            $user->delete();
-            //Delete password resets
-            PasswordReset::where('email', '=', $user->email)->delete();
-            echo "CATCH 2";
-            echo $e->getMessage();
-            return redirect()->back()->withErrors("There was a problem creating your account. Please try again later or report to support.");
+            //Rethrow error
+            throw $e;
         }
     }
 
