@@ -134,7 +134,7 @@ class openedx
                 \GuzzleHttp\RequestOptions::JSON => $enrollmentInfoObject
             ]);
             
-            return Toastr::success("You have successfully enrolled into this course");
+            return; //Toastr::success("You have successfully enrolled into this course");
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
 
