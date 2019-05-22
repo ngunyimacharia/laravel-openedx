@@ -73,6 +73,10 @@ class openedx
   */
     public function checkEnrollmentStatus($course_id)
     {
+        if(!isset($_COOKIE['edinstancexid'])){
+            Auth::logout();
+            return false;
+        }
         $client = new \GuzzleHttp\Client(
             [
                 'verify' => env('VERIFY_SSL', true),
