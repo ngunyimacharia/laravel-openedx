@@ -34,7 +34,6 @@ class openedxServiceProvider extends ServiceProvider
         User::observe(UserObserver::class);
 
         //Listen for login and logout
-        Event::listen('Illuminate\Auth\Events\Login', 'ngunyimacharia\openedx\Listeners\SuccessfulLogin');
         Event::listen('Illuminate\Auth\Events\Verified', 'ngunyimacharia\openedx\Listeners\SuccessfulVerified');
         Event::listen('Illuminate\Auth\Events\Logout', 'ngunyimacharia\openedx\Listeners\SuccessfulLogout');
     }

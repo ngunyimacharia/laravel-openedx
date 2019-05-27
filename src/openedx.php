@@ -6,8 +6,17 @@ use Carbon\Carbon;
 use Cookie;
 use Auth;
 use Toastr;
+
+use ngunyimacharia\openedx\Controllers\EdxLoginController as LoginController;
+
 class openedx
 {
+
+    public function login($credentials){
+        $controller = new LoginController($credentials);
+        return $controller->login();
+    }
+
     public function getCourses()
     {
 
