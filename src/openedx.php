@@ -7,14 +7,26 @@ use Cookie;
 use Auth;
 use Toastr;
 
+use ngunyimacharia\openedx\Controllers\EdxRegisterController as RegisterController;
 use ngunyimacharia\openedx\Controllers\EdxLoginController as LoginController;
+use ngunyimacharia\openedx\Controllers\EdxLogoutController as LogoutController;
 
 class openedx
 {
 
+    public function register($user){
+        $controller = new RegisterController($user);
+        return $controller->register();
+    }
+
     public function login($credentials){
         $controller = new LoginController($credentials);
         return $controller->login();
+    }
+
+    public function logout(){
+        $controller = new LogoutController();
+        return $controller->logout();
     }
 
     public function getCourses()

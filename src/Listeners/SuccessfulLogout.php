@@ -1,6 +1,7 @@
 <?php
 
 namespace ngunyimacharia\openedx\Listeners;
+use ngunyimacharia\openedx\Controllers\EdxLogoutController as LogoutController;
 
 class SuccessfulLogout
 {
@@ -22,14 +23,7 @@ class SuccessfulLogout
      */
     public function handle($event)
     {
-        //logout
-        $cookies = ['csrftoken', 'edxloggedin', 'edx-user-info', 'openedx-language-preference', 'edinstancexid', 'sessionid'];
-        foreach ($_COOKIE as $name => $value) {
-            if (isset($_COOKIE[$name])) {
-                unset($_COOKIE[$name]);
-                setcookie($name, '', time() - 1000, '/');
-            }
-        }
-        return true;
+        $controller = new LogoutController();
+        return $controller->logout();
     }
 }

@@ -11,63 +11,6 @@ use Toastr;
 class UserObserver
 {
     /**
-     * Listen to the User created event.
-     *
-     * @param  \App\User  $user
-     * @return void
-     */
-    public function created(User $user)
-    {
-        //Validate user
-        if ($user === null) {
-            return;
-        }
-        //Package data to be sent
-        $data = [
-            'email' => $user->email,
-            'name' => $user->first_name . ' ' . $user->last_name,
-            'username' => $user->username,
-            'honor_code' => 'true',
-            'password' => request()->get(env('REGISTER_PASSWORD_FIELD')),
-            'country' => 'KE',
-            'terms_of_service' => 'true'
-        ];
-
-        //Check username
-        while(EdxAuthUser::where('username',$user->username)->count()){
-            $user->username = $user->username.random_int(0, 9);
-            $user->save();
-        }
-
-        $headers = array(
-            'Content-Type' => 'application/x-www-form-urlencoded',
-            'cache-control' => 'no-cache',
-            'Referer' => env('LMS_BASE') . '/register',
-        );
-
-        $client = new \GuzzleHttp\Client(['verify' => env('VERIFY_SSL', true)]);
-
-        try {
-
-            $response = $client->request('POST', env('LMS_REGISTRATION_URL'), [
-                'form_params' => $data,
-                'headers' => $headers,
-            ]);
-
-            return true;
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-
-            //Error, delete user
-            $user->delete();
-            //Delete password resets
-            PasswordReset::where('email', '=', $user->email)->delete();
-            //Rethrow error
-            throw $e;
-        }
-    }
-
-
-    /**
      * Handle the user "updated" event.
      *
      * @param  \App\User  $user
