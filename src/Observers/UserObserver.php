@@ -7,6 +7,7 @@ use ngunyimacharia\openedx\Models\EdxAuthUser;
 use ngunyimacharia\openedx\Models\PasswordReset;
 use Ixudra\Curl\Facades\Curl;
 use Toastr;
+use Mockery\CountValidator\Exception;
 
 class UserObserver
 {
@@ -93,18 +94,15 @@ class UserObserver
         $email = $user->email;
 
         $client = new \GuzzleHttp\Client();
-        try {
-            $response = $client->request('GET', env('LMS_RESET_PASSWORD_PAGE'));
-        } catch (\Exception $e) {
-            return Toastr::error("There was a problem resetting your password. Please try again later or report to support.");
-        }
+
+        $response = $client->request('GET', env('LMS_RESET_PASSWORD_PAGE'));
+
         if ($response->hasHeader('Set-Cookie')) {
             $csrfToken = explode('=', explode(';', $response->getHeader('Set-Cookie')[0])[0])[1];
         } else {
             //Error, reactivate reset
-            return Toastr::error("There was a problem resetting your password. Please try again later or report to support.");
+            throw new Exception("Unable to get CSRF token");
         }
-
 
         $data = [
             'email' => $email,
@@ -119,23 +117,11 @@ class UserObserver
         );
 
         $client = new \GuzzleHttp\Client();
-        try {
 
-            $response = $client->request('POST', env('LMS_RESET_PASSWORD_API_URL'), [
-                'form_params' => $data,
-                'headers' => $headers,
-            ]);
-            return true;
-            
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
-            $responseJson = $e->getResponse();
-            dd($e->getResponse());
-            $response = $responseJson->getBody()->getContents();
-            //Error, reactivate reset
-            return Toastr::error("There was a problem resetting your password. Please try again later or report to support.");
-        } catch (\Exception $e) {
-            //Error, reactivate reset
-            return Toastr::error("There was a problem resetting your password. Please try again later or report to support.");
-        }
+        $response = $client->request('POST', env('LMS_RESET_PASSWORD_API_URL'), [
+            'form_params' => $data,
+            'headers' => $headers,
+        ]);
+        return true;
     }
 }
