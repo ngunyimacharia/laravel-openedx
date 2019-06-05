@@ -10,21 +10,25 @@ use Toastr;
 use ngunyimacharia\openedx\Controllers\EdxRegisterController as RegisterController;
 use ngunyimacharia\openedx\Controllers\EdxLoginController as LoginController;
 use ngunyimacharia\openedx\Controllers\EdxLogoutController as LogoutController;
+use ngunyimacharia\openedx\Controllers\EdxEnrollmentController as EnrollmentController;
 
 class openedx
 {
 
-    public function register($user){
+    public function register($user)
+    {
         $controller = new RegisterController($user);
         return $controller->register();
     }
 
-    public function login($credentials){
+    public function login($credentials)
+    {
         $controller = new LoginController($credentials);
         return $controller->login();
     }
 
-    public function logout(){
+    public function logout()
+    {
         $controller = new LogoutController();
         return $controller->logout();
     }
@@ -94,7 +98,7 @@ class openedx
   */
     public function checkEnrollmentStatus($course_id)
     {
-        if(!isset($_COOKIE['edinstancexid'])){
+        if (!isset($_COOKIE['edinstancexid'])) {
             Auth::logout();
             return false;
         }
@@ -106,7 +110,7 @@ class openedx
                 ]
             ]
         );
-        
+
         $request = $client->request('GET', env('LMS_BASE') . '/api/enrollment/v1/enrollment/' . Auth::user()->username . ',' . $course_id);
         $response = json_decode($request->getBody()->getContents());
 
@@ -118,9 +122,9 @@ class openedx
         return $enrollmentStatus;
     }
 
-    /*
-  *Function to enroll a user
-  */
+    /** 
+     *Function to enroll a user
+     */
     public function enroll($course_id)
     {
 
@@ -158,7 +162,7 @@ class openedx
             $response = $enrollClient->request('POST', env('LMS_BASE') . '/api/enrollment/v1/enrollment', [
                 \GuzzleHttp\RequestOptions::JSON => $enrollmentInfoObject
             ]);
-            
+
             return; //Toastr::success("You have successfully enrolled into this course");
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -166,10 +170,28 @@ class openedx
             $response = $e->getResponse();
             $responseBodyAsString = $response->getBody()->getContents();
             // dd($responseBodyAsString);
-            
+
             return Toastr::error("Error enrolling into course");
 
             return false;
         }
+    }
+
+
+    /**
+     *Get all enrollments
+     */
+
+    public function enrollments()
+    {
+        EnrollmentController::all();
+    }
+
+    /**
+     * Get user course progress
+     */
+    public function getCourseProgress($courseId)
+    {
+        return EnrollmentController::getCourseProgress($courseId);
     }
 }

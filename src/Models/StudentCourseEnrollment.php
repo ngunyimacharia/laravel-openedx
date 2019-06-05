@@ -33,12 +33,12 @@ class StudentCourseEnrollment extends Model
              break;
            case 'notpassing':
            default:
-             $this->status = "Completed but Failed";
+             $this->status = "Completed but failed";
              break;
          }
 
        }else{
-         $this->status = 'In Progress';
+         $this->status = 'In progress';
          $this->grade = (0).'%';
        }
 
